@@ -18,5 +18,10 @@
             "type": "vcs",
             "url": "https://github.com/borisguery/oauth2-server.git"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-0": {
+            "Bgy\\OAuth2Server\\DbalStorage": "src"
+        }
+    }
 }
