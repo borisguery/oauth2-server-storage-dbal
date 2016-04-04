@@ -28,12 +28,12 @@ class DbalAccessTokenStorage implements AccessTokenStorage
             $this->tableConfiguration->getAccessTokenTableName(),
             [
                 'access_token'        => $accessToken->getToken(),
-                'resource_owner_id'   => (null === $accessToken->getResourceOwnerId())
+                'resource_owner_id'   => (null === $accessToken->getResourceOwner())
                     ? null
-                    : $accessToken->getResourceOwnerId()->getResourceOwnerId(),
-                'resource_owner_type' => (null === $accessToken->getResourceOwnerId())
+                    : $accessToken->getResourceOwner()->getResourceOwnerId(),
+                'resource_owner_type' => (null === $accessToken->getResourceOwner())
                     ? null
-                    : $accessToken->getResourceOwnerId()->getResourceOwnerType(),
+                    : $accessToken->getResourceOwner()->getResourceOwnerType(),
                 'client_id'           => $accessToken->getClientId(),
                 'scopes'              => implode(',', $accessToken->getScopes()),
                 'expires_at'          => substr(
