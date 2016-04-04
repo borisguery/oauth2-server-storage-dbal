@@ -1,0 +1,22 @@
+{
+    "name": "borisguery/oauth2-server-storage-dbal",
+    "type": "library",
+    "require": {
+        "borisguery/oauth2-server": "dev-master",
+        "doctrine/dbal": "^2.5"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Boris Guéry",
+            "email": "guery.b@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/borisguery/oauth2-server.git"
+        }
+    ]
+}
