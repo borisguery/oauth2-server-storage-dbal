@@ -77,7 +77,7 @@ class DbalAccessTokenStorage implements AccessTokenStorage
         return new AccessToken(
             $rows[0]['access_token'],
             \DateTimeImmutable::createFromFormat(
-                \DateTime::ISO8601,
+                'Y-m-d H:i:s',
                 $rows[0]['expires_at'],
                 new \DateTimeZone('UTC')
             ),
