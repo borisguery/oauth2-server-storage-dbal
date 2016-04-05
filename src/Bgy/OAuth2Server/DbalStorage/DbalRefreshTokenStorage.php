@@ -29,7 +29,12 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
             $this->tableConfiguration->getRefreshTokenTableName(),
             [
                 'refresh_token'           => $refreshToken->getToken(),
-                'associated_access_token' => $refreshToken->getAssociatedAccessToken()->getToken()
+                'associated_access_token' => $refreshToken->getAssociatedAccessToken()->getToken(),
+                'expires_at'              => substr(
+                    $refreshToken->getExpiresAt()->format(\DateTime::ISO8601),
+                    0,
+                    -5
+                )
             ]
         );
     }
@@ -47,7 +52,7 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
     public function findByToken($refreshTokenId)
     {
         $qb = $this->dbalConnection->createQueryBuilder();
-        $stmt = $qb->select('*')
+        $stmt = $qb->select('*, r.expires_at AS refresh_token_expires_at')
             ->from($this->tableConfiguration->getRefreshTokenTableName(), 'r')
             ->innerJoin(
                 'r',
@@ -84,6 +89,11 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
                     ? new ResourceOwner($rows[0]['resource_owner_id'], $rows[0]['resource_owner_type'])
                     : null,
                 explode(',', $rows[0]['scopes'])
+            ),
+            \DateTimeImmutable::createFromFormat(
+                'Y-m-d H:i:s',
+                $rows[0]['refresh_token_expires_at'],
+                new \DateTimeZone('UTC')
             )
         );
     }
