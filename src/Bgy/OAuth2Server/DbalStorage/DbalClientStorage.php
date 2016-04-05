@@ -69,7 +69,7 @@ class DbalClientStorage implements ClientStorage
             $rows[0]['client_id'],
             $rows[0]['client_secret'],
             unserialize($rows[0]['redirect_uris']),
-            unserialize($rows[0]['grant_types'])
+            unserialize($rows[0]['allowed_grant_types'])
         );
     }
 }
