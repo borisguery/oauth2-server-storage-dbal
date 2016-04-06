@@ -25,18 +25,47 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
 
     public function save(RefreshToken $refreshToken)
     {
-        $this->dbalConnection->insert(
-            $this->tableConfiguration->getRefreshTokenTableName(),
-            [
-                'refresh_token'           => $refreshToken->getToken(),
-                'associated_access_token' => $refreshToken->getAssociatedAccessToken()->getToken(),
-                'expires_at'              => substr(
-                    $refreshToken->getExpiresAt()->format(\DateTime::ISO8601),
-                    0,
-                    -5
-                )
-            ]
-        );
+        $revokedAt = $refreshToken->getRevokedAt()
+            ? substr(
+                $refreshToken->getRevokedAt()->format(\DateTime::ISO8601),
+                0,
+                -5
+            )
+            : null
+        ;
+
+        try {
+            $this->findByToken($refreshToken->getToken());
+            $this->dbalConnection->update(
+                $this->tableConfiguration->getRefreshTokenTableName(),
+                [
+                    'associated_access_token' => $refreshToken->getAssociatedAccessToken()->getToken(),
+                    'expires_at' => substr(
+                        $refreshToken->getExpiresAt()->format(\DateTime::ISO8601),
+                        0,
+                        -5
+                    ),
+                    'revoked_at' => $revokedAt
+                ],
+                [
+                    'refresh_token' => $refreshToken->getToken(),
+                ]
+            );
+        } catch (RefreshTokenNotFound $e) {
+            $this->dbalConnection->insert(
+                $this->tableConfiguration->getRefreshTokenTableName(),
+                [
+                    'refresh_token' => $refreshToken->getToken(),
+                    'associated_access_token' => $refreshToken->getAssociatedAccessToken()->getToken(),
+                    'expires_at' => substr(
+                        $refreshToken->getExpiresAt()->format(\DateTime::ISO8601),
+                        0,
+                        -5
+                    ),
+                    'revoked_at' => $revokedAt
+                ]
+            );
+        }
     }
 
     public function delete(RefreshToken $refreshToken)
@@ -75,6 +104,15 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
             throw new RefreshTokenNotFound($refreshTokenId);
         }
 
+        $revokedAt = (null !== $rows[0]['revoked_at'])
+            ? \DateTimeImmutable::createFromFormat(
+                'Y-m-d H:i:s',
+                $rows[0]['revoked_at'],
+                new \DateTimeZone('UTC')
+            )
+            : null
+        ;
+
         return new RefreshToken(
             $rows[0]['refresh_token'],
             new AccessToken(
@@ -94,7 +132,8 @@ class DbalRefreshTokenStorage implements RefreshTokenStorage
                 'Y-m-d H:i:s',
                 $rows[0]['refresh_token_expires_at'],
                 new \DateTimeZone('UTC')
-            )
+            ),
+            $revokedAt
         );
     }
 }
